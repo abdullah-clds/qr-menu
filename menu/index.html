@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/qr-menu/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="refresh" content="0; url=/" />
+    <title>Menü</title>
+    <script>
+      // Backward compatibility: older printed QR codes point to /menu/.
+      // The QR menu now lives at the site root — bounce there, preserving
+      // any ?category= query so a deep link still lands correctly.
+      window.location.replace("/" + window.location.search);
+    </script>
+  </head>
+  <body>
+    <p>Yönlendiriliyor... <a href="/">Menüye git</a></p>
+  </body>
+</html>
