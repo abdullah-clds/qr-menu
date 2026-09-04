@@ -1,0 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Antonio:wght@400..700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Refined, neutral palette — food photography and typography lead, not color. */
+  --color-menu-bg: #f6f1e8;
+  --color-menu-surface: #faf7f1;
+  --color-menu-ink: #292420;
+  --color-menu-muted: #8a7e70;
+  --color-menu-line: #29242020;
+  --color-menu-accent: #7f3b2d;
+
+  --font-display: "Antonio", sans-serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Single, restrained dark palette — same structure as light, warm tones
+   tying back to the brand's brown/cream identity. Not a "mode", just the
+   same menu with the lights off. */
+[data-theme="dark"] {
+  --color-menu-bg: #1c1712;
+  --color-menu-surface: #26201a;
+  --color-menu-ink: #f3ece2;
+  --color-menu-muted: #b9ab99;
+  --color-menu-line: #f3ece224;
+  --color-menu-accent: #d8a458;
+}
+
+/* Dark mode: give product rows a real elevated surface instead of a
+   near-invisible hairline divider, and make the sticky toolbar read as its
+   own layer instead of blending into the page once scrolled. */
+[data-theme="dark"] li.menu-reveal {
+  background-color: var(--color-menu-surface);
+  border-bottom: none;
+  border-radius: 0.6rem;
+  padding: 0.8rem 0.85rem;
+  margin-bottom: 0.55rem;
+}
+[data-theme="dark"] li.menu-reveal:last-child {
+  margin-bottom: 0;
+}
+[data-theme="dark"] .menu-toolbar {
+  background-color: var(--color-menu-surface);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-menu-bg);
+  color: var(--color-menu-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+  body {
+    background-color: #ece5d8;
+  }
+  body:has([data-theme="dark"]) {
+    background-color: #12100c;
+  }
+  #root > div {
+    background-color: var(--color-menu-bg);
+    min-height: 100dvh;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-reveal {
+    animation: menu-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .aura-fade-in {
+    animation: menu-reveal 0.3s ease-out both;
+  }
+}
+
+@keyframes menu-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,17 @@
+# Defense in depth: only index.php is a valid direct entry point.
+# config/, database/, helpers/, middleware/, repositories/, services/
+# must never be web-reachable on their own.
+<FilesMatch "^(?!index\.php$).+\.php$">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes
+
+RewriteEngine On
+
+# Every request (except the denied files above) goes through the
+# front controller, which parses the intended route from the URL.
+RewriteRule ^ index.php [L]
+
+# Fallback for hosts without mod_rewrite: call
+# /api/index.php?route=your/route instead.
