@@ -31,4 +31,19 @@ class CategoryController
         $this->service->delete((int) $id);
         json_response(['deleted' => true]);
     }
+
+    public function uploadImage(string $id): void
+    {
+        if (empty($_FILES['image'])) {
+            throw new ApiException("No file uploaded under field 'image'.", 422);
+        }
+        $category = $this->service->uploadImage((int) $id, $_FILES['image']);
+        json_response(['category' => $category]);
+    }
+
+    public function removeImage(string $id): void
+    {
+        $category = $this->service->removeImage((int) $id);
+        json_response(['category' => $category]);
+    }
 }

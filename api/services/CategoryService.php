@@ -77,7 +77,35 @@ class CategoryService
             );
         }
 
+        delete_uploaded_image($existing['image_path']);
         $this->categories->delete($id);
+    }
+
+    public function uploadImage(int $id, array $file): array
+    {
+        $existing = $this->categories->find($id);
+        if (!$existing) {
+            throw new ApiException('Category not found.', 404);
+        }
+
+        $publicPath = store_uploaded_image($file, 'categories');
+        delete_uploaded_image($existing['image_path']);
+        $this->categories->updateImagePath($id, $publicPath);
+
+        return $this->categories->find($id);
+    }
+
+    public function removeImage(int $id): array
+    {
+        $existing = $this->categories->find($id);
+        if (!$existing) {
+            throw new ApiException('Category not found.', 404);
+        }
+
+        delete_uploaded_image($existing['image_path']);
+        $this->categories->updateImagePath($id, null);
+
+        return $this->categories->find($id);
     }
 
     private function uniqueSlug(string $name, ?int $excludeId = null): string

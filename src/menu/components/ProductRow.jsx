@@ -1,54 +1,41 @@
 import { formatPrice } from "../../shared/format";
 
 const ProductRow = ({ product, currency }) => {
-  const { name, description, price, image, available, featured } = product;
+  const { name, description, price, image, available } = product;
 
   return (
-    <li className="menu-reveal flex gap-4 border-b border-menu-line py-4 last:border-b-0">
+    <li className="menu-fade-in flex gap-3.5 rounded-[1.75rem] border border-menu-line bg-menu-surface p-3.5 sm:gap-4 sm:p-4">
       {image ? (
         <img
           src={image}
-          alt={name}
+          alt=""
           loading="lazy"
           decoding="async"
-          width={88}
-          height={88}
-          className="size-[76px] shrink-0 rounded-md bg-menu-line/40 object-cover sm:size-[88px]"
-          style={available ? undefined : { opacity: 0.55 }}
+          className="size-20 shrink-0 rounded-2xl object-cover sm:size-24"
+          style={available ? undefined : { opacity: 0.5 }}
         />
       ) : null}
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
-          <span className="min-w-0 font-medium text-menu-ink">{name}</span>
-          <span
-            aria-hidden="true"
-            className="h-px flex-1 translate-y-[-4px] border-b border-dotted border-menu-ink/25"
-          />
-          <span className="shrink-0 font-medium tabular-nums text-menu-ink">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-w-0 break-words font-display text-base font-bold text-menu-text sm:text-lg">
+            {name}
+          </h3>
+          <span className="shrink-0 whitespace-nowrap font-display text-base font-extrabold tabular-nums text-menu-text sm:text-lg">
             {formatPrice(price, currency)}
           </span>
         </div>
 
         {description ? (
-          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-menu-muted">
+          <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-menu-text-muted">
             {description}
           </p>
         ) : null}
 
-        {featured || !available ? (
-          <div className="mt-1.5 flex items-center gap-2">
-            {featured ? (
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-menu-accent">
-                Şefin Seçimi
-              </span>
-            ) : null}
-            {!available ? (
-              <span className="rounded border border-menu-ink/15 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-menu-muted">
-                Tükendi
-              </span>
-            ) : null}
-          </div>
+        {!available ? (
+          <span className="mt-2 inline-block rounded-full bg-menu-hero/8 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-menu-text-muted">
+            Tükendi
+          </span>
         ) : null}
       </div>
     </li>

@@ -19,10 +19,15 @@ class SettingsService
         $data = [
             'restaurant_name' => require_string($input, 'restaurant_name', 160, false) ?? '',
             'menu_title' => require_string($input, 'menu_title', 160, false) ?? '',
+            'menu_description' => require_string($input, 'menu_description', 255, false),
             'currency' => require_string($input, 'currency', 10, false) ?? 'TRY',
             'phone' => require_string($input, 'phone', 40, false),
             'address' => require_string($input, 'address', 255, false),
+            'email' => require_string($input, 'email', 160, false),
             'instagram' => require_string($input, 'instagram', 120, false),
+            'facebook' => require_string($input, 'facebook', 120, false),
+            'tiktok' => require_string($input, 'tiktok', 120, false),
+            'whatsapp' => require_string($input, 'whatsapp', 40, false),
             'opening_hours' => require_string($input, 'opening_hours', 255, false),
         ];
 

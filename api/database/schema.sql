@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS categories (
     name VARCHAR(120) NOT NULL,
     slug VARCHAR(140) NOT NULL,
     description TEXT NULL,
+    image_path VARCHAR(255) NULL,
     sort_order INT NOT NULL DEFAULT 0,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,15 +48,30 @@ CREATE TABLE IF NOT EXISTS settings (
     id TINYINT UNSIGNED NOT NULL PRIMARY KEY DEFAULT 1,
     restaurant_name VARCHAR(160) NOT NULL DEFAULT '',
     menu_title VARCHAR(160) NOT NULL DEFAULT '',
+    menu_description VARCHAR(255) NULL,
     logo_path VARCHAR(255) NULL,
     currency VARCHAR(10) NOT NULL DEFAULT 'TRY',
     phone VARCHAR(40) NULL,
     address VARCHAR(255) NULL,
+    email VARCHAR(160) NULL,
     instagram VARCHAR(120) NULL,
+    facebook VARCHAR(120) NULL,
+    tiktok VARCHAR(120) NULL,
+    whatsapp VARCHAR(40) NULL,
     opening_hours VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Additive, idempotent upgrades for databases created before the columns
+-- above existed. MySQL 8.0.29+/MariaDB 10.0+ support IF NOT EXISTS here;
+-- CREATE TABLE IF NOT EXISTS above never touches an already-existing table.
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_path VARCHAR(255) NULL AFTER description;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS menu_description VARCHAR(255) NULL AFTER menu_title;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS email VARCHAR(160) NULL AFTER address;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS facebook VARCHAR(120) NULL AFTER instagram;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS tiktok VARCHAR(120) NULL AFTER facebook;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(40) NULL AFTER tiktok;
 
 CREATE TABLE IF NOT EXISTS login_attempts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

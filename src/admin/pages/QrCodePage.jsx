@@ -15,7 +15,7 @@ const QrCodePage = () => {
   const showToast = useToast();
   const canvasRef = useRef(null);
   const [svgMarkup, setSvgMarkup] = useState("");
-  const menuUrl = `${window.location.origin}/menu/`;
+  const menuUrl = `${window.location.origin}/`;
 
   useEffect(() => {
     QRCode.toCanvas(canvasRef.current, menuUrl, { width: 240, margin: 1 });

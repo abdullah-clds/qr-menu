@@ -6,11 +6,16 @@ import { resizeImageFile } from "../utils/resizeImage";
 const FIELDS = [
   { key: "restaurant_name", label: "Restoran adı" },
   { key: "menu_title", label: "Menü başlığı" },
+  { key: "menu_description", label: "Menü açıklaması" },
   { key: "currency", label: "Para birimi (örn. TRY)" },
   { key: "phone", label: "Telefon" },
+  { key: "whatsapp", label: "WhatsApp" },
+  { key: "email", label: "E-posta" },
   { key: "address", label: "Adres" },
-  { key: "instagram", label: "Instagram" },
   { key: "opening_hours", label: "Çalışma saatleri" },
+  { key: "instagram", label: "Instagram" },
+  { key: "facebook", label: "Facebook" },
+  { key: "tiktok", label: "TikTok" },
 ];
 
 const SettingsPage = () => {

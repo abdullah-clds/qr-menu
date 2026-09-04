@@ -18,6 +18,8 @@ return [
     ['POST', 'admin/categories', [CategoryController::class, 'store'], true, true],
     ['PUT', 'admin/categories/{id}', [CategoryController::class, 'update'], true, true],
     ['DELETE', 'admin/categories/{id}', [CategoryController::class, 'destroy'], true, true],
+    ['POST', 'admin/categories/{id}/image', [CategoryController::class, 'uploadImage'], true, true],
+    ['DELETE', 'admin/categories/{id}/image', [CategoryController::class, 'removeImage'], true, true],
 
     ['GET', 'admin/products', [ProductController::class, 'index'], true, false],
     ['POST', 'admin/products', [ProductController::class, 'store'], true, true],

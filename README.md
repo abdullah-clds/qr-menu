@@ -1,18 +1,24 @@
-# QR Restaurant Menu System
+# Restaurant QR Menu Management System
 
-A restaurant platform with three separate experiences sharing one codebase:
+A focused QR-menu platform with two experiences sharing one codebase:
 
-- **`/`** — the public brand/marketing website (React + GSAP + Tailwind, animated Awwwards-style template). Left untouched pending real restaurant branding.
-- **`/menu/`** — the QR menu: a fast, mobile-first page customers see after scanning the table QR code. No scroll-hijacking, no heavy animation — just the menu.
-- **`/admin/`** — the restaurant owner's admin panel: login, categories, products, availability, restaurant settings, QR code download.
+- **`/`** — the public QR menu customers see after scanning the table QR code: a dark
+  branded header, a photo-first category grid, and a product list per category. Fast,
+  mobile-first, no scroll-hijacking or marketing sections.
+- **`/admin/`** — the restaurant owner's admin panel: login, categories (with images),
+  products, availability, restaurant settings, QR code download.
 
-Backend is plain PHP (no framework) talking to MySQL/MariaDB over PDO, built for standard Apache/cPanel shared hosting — no Node.js runtime required in production.
+`/menu/` still works — it's a lightweight redirect to `/` for QR codes printed before
+the canonical URL moved, so nothing already in circulation breaks.
+
+Backend is plain PHP (no framework) talking to MySQL/MariaDB over PDO, built for
+standard Apache/cPanel shared hosting — no Node.js runtime required in production.
 
 ## Tech stack
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | React 19, Vite 6, Tailwind CSS v4, GSAP (public site only) |
+| Frontend | React 19, Vite 6, Tailwind CSS v4 |
 | Backend | PHP 8.2+ (vanilla, no framework, no Composer dependency) |
 | Database | MySQL 8+ / MariaDB, PDO + prepared statements |
 | Auth | PHP sessions, `password_hash`/`password_verify`, CSRF tokens |
@@ -21,14 +27,17 @@ Backend is plain PHP (no framework) talking to MySQL/MariaDB over PDO, built for
 ## Project layout
 
 ```
-index.html          public website entry   → src/main.jsx        (unchanged)
-menu/index.html      QR menu entry          → src/menu/main.jsx
-admin/index.html     admin panel entry      → src/admin/main.jsx
+index.html            public QR menu entry    → src/menu/main.jsx
+menu/index.html        legacy URL, redirects to /
+admin/index.html       admin panel entry       → src/admin/main.jsx
 src/
-  sections/, components/   existing public site (untouched)
-  menu/                    QR menu SPA (mobile-first, no router needed)
-  admin/                   admin SPA (hash-based routing, no server rewrite needed)
-  shared/                  code shared between menu/admin (e.g. price formatting)
+  menu/                     public QR menu SPA (mobile-first, no router needed)
+    hooks/useMenuData.js      fetches /api/public/menu
+    hooks/useCategoryRoute.js manages ?category=<slug> via pushState, no server rewrite
+    components/               MenuHero, CategoryGrid/Card, CategoryDetail, ProductRow,
+                               ContactSection, MenuFooter, StatusStates, icons
+  admin/                    admin SPA (hash-based routing, no server rewrite needed)
+  shared/                   code shared between menu/admin (e.g. price formatting)
 api/
   index.php          front controller — parses the route, dispatches, handles errors
   routes.php         route table (method, path, controller, auth/CSRF requirements)
@@ -38,15 +47,18 @@ api/
   middleware/        auth check, CSRF check, login rate limiting
   helpers/           JSON responses, validation, uploads, CSRF/slug helpers
 uploads/
-  products/, logo/   user-uploaded images (gitignored; .htaccess blocks script execution)
+  products/, categories/, logo/   user-uploaded images (gitignored; .htaccess blocks
+                                   script execution)
 ```
 
 Vite builds `index.html`, `menu/index.html` and `admin/index.html` as separate bundles
 (`dist/index.html`, `dist/menu/index.html`, `dist/admin/index.html`), so `/menu/` and
 `/admin/` are plain static folders in production — no Apache rewrite rules needed for
-routing between the three apps. The admin SPA itself uses a hash router
-(`/admin/#/products`) for the same reason: a page refresh never needs server-side
-rewrite support.
+routing between the apps. `dist/menu/index.html` ships no JS bundle of its own — it's a
+static redirect to `/`, so the menu app is never shipped twice. Category navigation on
+the public menu (`/?category=<slug>`) lives in the query string of the same static
+`index.html`, so a refresh or direct link never needs server-side rewrite support
+either. The admin SPA uses a hash router (`/admin/#/products`) for the same reason.
 
 ## Requirements
 
@@ -89,6 +101,12 @@ php api/database/seed.php               # optional: generic demo categories/prod
 php api/database/create_admin.php <username> <password> "Full Name"
 ```
 
+`migrate.php` is safe to re-run on a database that already has data — the schema uses
+`CREATE TABLE IF NOT EXISTS` plus additive `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`
+statements for columns introduced after the initial release (category images; the
+extra restaurant settings fields), so upgrading an existing installation never touches
+existing rows.
+
 `create_admin.php` is safe to re-run — it updates the password if the username already
 exists. There is no hardcoded default admin anywhere in the codebase; you must run this
 script once to be able to log in.
@@ -109,8 +127,7 @@ base URL to configure or hardcode.
 
 Open:
 
-- `http://localhost:5173/` — public site
-- `http://localhost:5173/menu/` — QR menu
+- `http://localhost:5173/` — the QR menu
 - `http://localhost:5173/admin/` — admin panel (log in with the account you created)
 
 ## Building for production
@@ -134,8 +151,8 @@ dist/.htaccess            (copied from public/.htaccess — blocks .env, dotfile
 2. **Upload to the host's document root** (e.g. `public_html/`):
    - the contents of `dist/`
    - the `api/` folder
-   - the `uploads/` folder (create `uploads/products/` and `uploads/logo/` with write
-     permissions if they don't exist; keep `uploads/.htaccess`)
+   - the `uploads/` folder (create `uploads/products/`, `uploads/categories/` and
+     `uploads/logo/` with write permissions if they don't exist; keep `uploads/.htaccess`)
 3. **Place `.env`** at the same level as `api/` (i.e. document root). It is never web-
    reachable — `public/.htaccess` (copied to `dist/.htaccess`) denies all dotfiles, and
    `api/.htaccess` denies direct access to every PHP file except `index.php`.
@@ -146,6 +163,11 @@ dist/.htaccess            (copied from public/.htaccess — blocks .env, dotfile
    ```
    (Seed data is optional and meant for local development — skip it in production
    unless you want the generic demo categories.)
+
+   **Upgrading an existing installation** (one that already has the old schema without
+   category images / the new settings fields): just run `php api/database/migrate.php`
+   again — the additive `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` statements bring it
+   up to date without touching existing categories, products or settings.
 5. **Verify `mod_rewrite`** is enabled so `api/.htaccess` can route clean URLs like
    `/api/public/menu` to `api/index.php`. If a host disables `.htaccess` rewriting,
    the API still works via the query-string fallback baked into `api/index.php`:
@@ -153,7 +175,10 @@ dist/.htaccess            (copied from public/.htaccess — blocks .env, dotfile
 6. **HTTPS**: strongly recommended. The session cookie is automatically marked
    `Secure` when the request is detected as HTTPS (`$_SERVER['HTTPS']` or
    `X-Forwarded-Proto`), and `SameSite=Lax` + `HttpOnly` always.
-7. Visit `https://yourdomain.com/admin/` and log in.
+7. Visit `https://yourdomain.com/admin/` and log in, then `https://yourdomain.com/` to
+   see the live QR menu. Point new QR codes at `https://yourdomain.com/` (the admin QR
+   page already generates this URL) — `/menu/` keeps working for any codes already
+   printed.
 
 The frontend never hardcodes a domain or API base URL — everything is same-origin
 relative paths, so the same build works on any domain.
@@ -181,6 +206,7 @@ See `.env.example` for the full list with comments. Key ones:
   before upload to keep payloads small — this is a convenience, not a security
   boundary; the backend validates independently regardless of what the browser sends.
 - `uploads/.htaccess` disables script execution in that folder as defense in depth.
+- Three subfolders: `products/`, `categories/`, `logo/`.
 
 ## Security notes
 
@@ -197,26 +223,6 @@ See `.env.example` for the full list with comments. Key ones:
   details are written to the PHP error log, never to the client.
 - **Data integrity**: deleting a category with products attached is rejected (409) —
   reassign or delete the products first, or deactivate the category instead.
-
-## Known pre-existing item (not introduced by this work)
-
-`npx eslint .` reports one `no-irregular-whitespace` error in
-`src/sections/HeroSection.jsx` (line ~105) that predates this project's backend/admin
-work and is unrelated to it — left as-is per the instruction not to touch existing
-public-site sections until real branding lands.
-
-## What's next (once real restaurant data arrives)
-
-The public website (`/`) still shows the original template's placeholder brand,
-copy and imagery. When real branding is ready, the next pass should:
-
-- Replace `src/constants/index.js` placeholder content (flavors, testimonials, etc.)
-  and the hero/section copy with the real restaurant's identity.
-- Point the public site's imagery/videos in `public/` at real assets.
-- Populate `/admin/` → Settings with the real restaurant name, logo, contact info.
-- Replace the seeded demo categories/products with the real menu via `/admin/`.
-
-None of this requires backend or infrastructure changes — it's content only.
 
 ## Out of scope (by design, YAGNI)
 

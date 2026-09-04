@@ -19,17 +19,25 @@ class SettingsRepository
 
         $stmt = db()->prepare(
             'UPDATE settings SET
-                restaurant_name = :restaurant_name, menu_title = :menu_title, currency = :currency,
-                phone = :phone, address = :address, instagram = :instagram, opening_hours = :opening_hours
+                restaurant_name = :restaurant_name, menu_title = :menu_title,
+                menu_description = :menu_description, currency = :currency,
+                phone = :phone, address = :address, email = :email,
+                instagram = :instagram, facebook = :facebook, tiktok = :tiktok, whatsapp = :whatsapp,
+                opening_hours = :opening_hours
              WHERE id = 1'
         );
         $stmt->execute([
             ':restaurant_name' => $data['restaurant_name'],
             ':menu_title' => $data['menu_title'],
+            ':menu_description' => $data['menu_description'],
             ':currency' => $data['currency'],
             ':phone' => $data['phone'],
             ':address' => $data['address'],
+            ':email' => $data['email'],
             ':instagram' => $data['instagram'],
+            ':facebook' => $data['facebook'],
+            ':tiktok' => $data['tiktok'],
+            ':whatsapp' => $data['whatsapp'],
             ':opening_hours' => $data['opening_hours'],
         ]);
     }

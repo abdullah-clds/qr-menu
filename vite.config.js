@@ -22,6 +22,10 @@ export default defineConfig({
     // ::1 and 127.0.0.1, and the default bind made the dev server hang on
     // requests. Pinning to 127.0.0.1 keeps it fast and predictable.
     host: "127.0.0.1",
+    // Allows the Cloudflare quick-tunnel hostname (*.trycloudflare.com) to reach
+    // this dev server despite Vite's Host-header allowlist. Dev-only; safe to
+    // revert once the demo tunnel is no longer needed.
+    allowedHosts: true,
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8000",

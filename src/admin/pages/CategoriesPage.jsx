@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
 import { useToast } from "../context/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { resizeImageFile } from "../utils/resizeImage";
 
 const emptyForm = { name: "", description: "" };
 
@@ -14,6 +15,8 @@ const CategoriesPage = () => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(emptyForm);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [uploadingId, setUploadingId] = useState(null);
+  const fileInputs = useRef({});
 
   const load = () => {
     setLoading(true);
@@ -100,6 +103,38 @@ const CategoriesPage = () => {
     }
   };
 
+  const handleImageChange = async (category, e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadingId(category.id);
+    try {
+      const resized = await resizeImageFile(file);
+      const formData = new FormData();
+      formData.append("image", resized);
+      await api.upload(`admin/categories/${category.id}/image`, formData);
+      showToast("Kategori görseli güncellendi.");
+      load();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
+  const handleRemoveImage = async (category) => {
+    setUploadingId(category.id);
+    try {
+      await api.del(`admin/categories/${category.id}/image`);
+      showToast("Kategori görseli kaldırıldı.");
+      load();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   const confirmDelete = async () => {
     try {
       await api.del(`admin/categories/${pendingDelete.id}`);
@@ -176,14 +211,60 @@ const CategoriesPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-neutral-900">{category.name}</p>
-                    {category.description ? (
-                      <p className="truncate text-sm text-neutral-500">{category.description}</p>
-                    ) : null}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    {category.image_path ? (
+                      <img
+                        src={category.image_path}
+                        alt=""
+                        className="size-12 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-[10px] text-neutral-400">
+                        Görsel yok
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words font-medium text-neutral-900">{category.name}</p>
+                      {category.description ? (
+                        <p className="truncate text-sm text-neutral-500">{category.description}</p>
+                      ) : null}
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          ref={(el) => {
+                            fileInputs.current[category.id] = el;
+                          }}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={(e) => handleImageChange(category, e)}
+                        />
+                        <button
+                          type="button"
+                          disabled={uploadingId === category.id}
+                          onClick={() => fileInputs.current[category.id]?.click()}
+                          className="text-xs font-medium text-neutral-600 underline decoration-neutral-300 underline-offset-2 disabled:opacity-50"
+                        >
+                          {uploadingId === category.id
+                            ? "Yükleniyor..."
+                            : category.image_path
+                              ? "Görseli değiştir"
+                              : "Görsel ekle"}
+                        </button>
+                        {category.image_path ? (
+                          <button
+                            type="button"
+                            disabled={uploadingId === category.id}
+                            onClick={() => handleRemoveImage(category)}
+                            className="text-xs font-medium text-red-600 underline decoration-red-200 underline-offset-2 disabled:opacity-50"
+                          >
+                            Kaldır
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-1 sm:shrink-0">
                     <button
                       type="button"
                       onClick={() => move(category, -1)}

@@ -5,7 +5,7 @@
  * (e.g. "/uploads/products/ab12cd34....webp") to store in the database.
  *
  * @param array $file  a single entry from $_FILES
- * @param string $subdir  "products" or "logo"
+ * @param string $subdir  "products", "categories" or "logo"
  */
 function store_uploaded_image(array $file, string $subdir): string
 {
@@ -42,7 +42,8 @@ function store_uploaded_image(array $file, string $subdir): string
         throw new ApiException('File is not a valid image.', 422);
     }
 
-    $subdir = $subdir === 'logo' ? 'logo' : 'products';
+    $allowedSubdirs = ['logo', 'products', 'categories'];
+    $subdir = in_array($subdir, $allowedSubdirs, true) ? $subdir : 'products';
     $targetDir = $uploads['path'] . '/' . $subdir;
     if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
         throw new ApiException('Could not prepare upload directory.', 500);

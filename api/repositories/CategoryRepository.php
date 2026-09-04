@@ -71,6 +71,12 @@ class CategoryRepository
         ]);
     }
 
+    public function updateImagePath(int $id, ?string $imagePath): void
+    {
+        $stmt = db()->prepare('UPDATE categories SET image_path = :image_path WHERE id = :id');
+        $stmt->execute([':id' => $id, ':image_path' => $imagePath]);
+    }
+
     public function delete(int $id): void
     {
         $stmt = db()->prepare('DELETE FROM categories WHERE id = :id');
@@ -82,5 +88,24 @@ class CategoryRepository
         $stmt = db()->prepare('SELECT COUNT(*) FROM products WHERE category_id = :id');
         $stmt->execute([':id' => $categoryId]);
         return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Active product count per category, in one query — avoids N+1 on the
+     * public menu grid regardless of category count.
+     *
+     * @return array<int,int> category_id => count
+     */
+    public function activeProductCounts(): array
+    {
+        $rows = db()->query(
+            'SELECT category_id, COUNT(*) AS cnt FROM products WHERE is_active = 1 GROUP BY category_id'
+        )->fetchAll();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row['category_id']] = (int) $row['cnt'];
+        }
+        return $counts;
     }
 }

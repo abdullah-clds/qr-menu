@@ -5,18 +5,25 @@ class PublicMenuController
     public function show(): void
     {
         $settings = (new SettingsRepository())->get();
-        $categories = (new CategoryRepository())->all(onlyActive: true);
+        $categoryRepo = new CategoryRepository();
+        $categories = $categoryRepo->all(onlyActive: true);
+        $productCounts = $categoryRepo->activeProductCounts();
         $products = (new ProductRepository())->activeForPublicMenu();
 
         json_response([
             'settings' => [
                 'restaurantName' => $settings['restaurant_name'],
                 'menuTitle' => $settings['menu_title'],
+                'menuDescription' => $settings['menu_description'],
                 'logo' => $settings['logo_path'],
                 'currency' => $settings['currency'],
                 'phone' => $settings['phone'],
                 'address' => $settings['address'],
+                'email' => $settings['email'],
                 'instagram' => $settings['instagram'],
+                'facebook' => $settings['facebook'],
+                'tiktok' => $settings['tiktok'],
+                'whatsapp' => $settings['whatsapp'],
                 'openingHours' => $settings['opening_hours'],
             ],
             'categories' => array_map(static fn (array $c): array => [
@@ -24,6 +31,8 @@ class PublicMenuController
                 'name' => $c['name'],
                 'slug' => $c['slug'],
                 'description' => $c['description'],
+                'image' => $c['image_path'],
+                'productCount' => $productCounts[(int) $c['id']] ?? 0,
             ], $categories),
             'products' => array_map(static fn (array $p): array => [
                 'id' => (int) $p['id'],
